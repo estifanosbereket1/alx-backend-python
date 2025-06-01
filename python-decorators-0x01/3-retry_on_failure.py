@@ -18,7 +18,8 @@ def retry_on_failure(retries, delay):
                 except sqlite3.Error as e:
                     retry_counnt+=1
                     time.sleep(delay)
-            return func(*args, **kwargs)
+            raise Exception("All retries failed")            
+            # return func(*args, **kwargs)
         return wrapper
     return decorator
 
