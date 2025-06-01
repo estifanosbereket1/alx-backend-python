@@ -15,7 +15,7 @@ async def async_fetch_older_users():
           return rows
 
 
-async def main():
+async def fetch_concurrently():
   users, old_users = await asyncio.gather(
     async_fetch_users(),
     async_fetch_older_users(),
