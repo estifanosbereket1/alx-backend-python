@@ -14,3 +14,8 @@ class DatabaseConnection:
         if self.conn:
             self.conn.close()
         return False
+    
+with DatabaseConnection("users.db") as conn:
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users")
+    print(cursor.fetchall())
