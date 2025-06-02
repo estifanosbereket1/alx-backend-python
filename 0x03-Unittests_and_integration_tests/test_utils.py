@@ -5,8 +5,7 @@ from parameterized import parameterized
 from utils import access_nested_map
 
 class TestAccessNestedMap(unittest.TestCase):
-    def __init__(self):
-        pass
+  
 
     @parameterized.expand([
     ({"a": 1}, ("a",), 1),                       
