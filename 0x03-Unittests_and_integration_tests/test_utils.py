@@ -1,94 +1,64 @@
 #!/usr/bin/env python3
 
 from unittest import TestCase
-from unittest.mock import patch, Mock, PropertyMock
+from unittest.mock import patch, Mock
 from parameterized import parameterized
-from fixtures import TEST_PAYLOAD
-from client import GithubOrgClient
+from utils import access_nested_map, get_json, memoize
 
 
-class TestGithubOrgClient(TestCase):
+class TestAccessNestedMap(TestCase):
+
     @parameterized.expand(
         [
-            ("google", TEST_PAYLOAD),
-            ("abc", TEST_PAYLOAD),
+            ({"a": 1}, ("a",), 1),
+            ({"a": {"b": 2}}, ("a",), {"b": 2}),
+            ({"a": {"b": 2}}, ("a", "b"), 2),
         ]
     )
-    def test_org(self, org_name, test_payload):
+    def test_access_nested_map(self, nested_map, path, expected):
+        result = access_nested_map(nested_map, path)
+        self.assertEqual(result, expected)
+
+    @parameterized.expand([({}, ("a")), ({"a": 1}, ("a", "b"))])
+    def test_access_nested_map_exception(self, nested_map, path):
+        with self.assertRaises(KeyError):
+            access_nested_map(nested_map, path)
+
+
+class TestGetJson(TestCase):
+   
+
+    @parameterized.expand(
+        [
+            ("http://example.com", {"payload": True}),
+            ("http://holberton.io", {"payload": False}),
+        ]
+    )
+    def test_get_json(self, test_url, test_payload):
         with patch("requests.get") as mock_requests_get:
+            # Todo: fix this to make it a response object with the payload returned from rs.json()
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = test_payload
 
             mock_requests_get.return_value = mock_response
-            github_org_client = GithubOrgClient(org_name)
-            self.assertEqual(github_org_client.org, test_payload)
-
-    @parameterized.expand([(TEST_PAYLOAD[0][0],)])
-    def test_public_repos_url(self, test_payload):
-        with patch.object(
-            GithubOrgClient,
-            "org",
-            new_callable=PropertyMock,
-        ) as mock_GithubOrgClient:
-            mock_GithubOrgClient.return_value = test_payload
-            self.assertEqual(
-                GithubOrgClient("google")._public_repos_url,
-                "https://api.github.com/orgs/google/repos",
-            )
-
-    # ? Why does making patch decorator and the mock json first not work????
-    @parameterized.expand([("google", TEST_PAYLOAD[0][0])])
-    @patch("utils.get_json")
-    def test_public_repos(
-        self,
-        org_name,
-        test_payload,
-        mock_get_json,
-    ):
-        mock_get_json.return_value = test_payload
-        with patch.object(
-            GithubOrgClient, "_public_repos_url", new_callable=PropertyMock
-        ) as mock__public_repos_url:
-            mock__public_repos_url.return_value = test_payload["repos_url"]
-            self.assertEqual(
-                GithubOrgClient(org_name)._public_repos_url,
-                "https://api.github.com/orgs/google/repos",
-            )
-
-    @parameterized.expand(
-        [
-            ({"license": {"key": "my_license"}}, "my_license", True),
-            ({"license": {"key": "other_license"}}, "my_license", False),
-        ]
-    )
-    def test_has_license(self, repo, license_key, test_result):
-        self.assertEqual(GithubOrgClient.has_license(repo, license_key), test_result)
+            self.assertEqual(get_json(test_url), test_payload)
 
 
-class TestIntegrationGithubOrgClient(TestCase):
-    def setUp(self):
-        return super().setUp()
+class TestMemoize(TestCase):
+    def test_memoize(self):
+        class TestClass:
+            # ! Do all instance methods need to have the parameter "self"?
+            def a_method(self):
+                return 42
 
-    def tearDown(self):
-        return super().tearDown()
+            @memoize
+            def a_property(self):
+                return self.a_method()
 
-    def setUpClass(self):
-        return self.setUp()
+        with patch.object(TestClass, "a_method") as mock_a_method:
+            test_object = TestClass()
+            test_object.a_property()
+            test_object.a_property()
 
-    def tearDownClass(self):
-        return self.tearDown()
-
-    @parameterized.expand(
-        [
-            (0, TEST_PAYLOAD[0]),
-            (1, TEST_PAYLOAD[0])(2, TEST_PAYLOAD[0])(3, TEST_PAYLOAD[0]),
-        ]
-    )
-    def get_patcher(self, test_index, test_payload):
-        with patch("requests.get") as mock_requests_get:
-            mock_response = Mock()
-            mock_response.status_code = 200
-            mock_response.json.return_value = test_payload[test_index]
-
-            mock_requests_get.return_value = mock_response
+            mock_a_method.assert_called_once()
