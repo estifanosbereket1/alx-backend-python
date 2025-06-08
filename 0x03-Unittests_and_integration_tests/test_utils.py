@@ -26,7 +26,15 @@ class TestAccessNestedMap(TestCase):
 
 
 class TestGetJson(TestCase):
-   
+    # @parameterized.expand(
+    #     [
+    #         ("http://example.com", {"payload": True}),
+    #         ("http://holberton.io", {"payload": False}),
+    #     ]
+    # )
+    # @patch("get")
+    # def test_get_json(self, test_url, test_payload):
+    #     pass
 
     @parameterized.expand(
         [
