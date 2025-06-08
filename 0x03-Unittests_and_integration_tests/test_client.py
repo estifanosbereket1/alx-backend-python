@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-
 from unittest import TestCase
 from unittest.mock import patch, Mock, PropertyMock
 from parameterized import parameterized
 from fixtures import TEST_PAYLOAD
 from client import GithubOrgClient
-
 
 class TestGithubOrgClient(TestCase):
     @parameterized.expand(
@@ -37,7 +35,6 @@ class TestGithubOrgClient(TestCase):
                 "https://api.github.com/orgs/google/repos",
             )
 
-    # ? Why does making patch decorator and the mock json first not work????
     @parameterized.expand([("google", TEST_PAYLOAD[0][0])])
     @patch("utils.get_json")
     def test_public_repos(
