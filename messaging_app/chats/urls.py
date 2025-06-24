@@ -2,9 +2,9 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import MessageViewSet, ConversationViewSet
 
-router = DefaultRouter()
+routers = DefaultRouter()
 
-router.register(r'messages', MessageViewSet)
-router.register(r'conversations', ConversationViewSet)
+routers.register(r'messages', MessageViewSet)
+routers.register(r'conversations', ConversationViewSet)
 
-urlpatterns = router.urls
+urlpatterns = routers.urls
