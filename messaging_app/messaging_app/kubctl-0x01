@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# kubctl-0x01 - scales Django app replicas and monitors traffic
+
+set -e
+
+echo "🔁 Scaling messaging-app Deployment to 3 replicas..."
+kubectl scale deployment messaging-app --replicas=3
+
+echo "⏳ Waiting for pods to scale up..."
+sleep 10
+
+echo "📦 Checking current running pods:"
+kubectl get pods -l app=messaging-app
+
+echo "🧪 Starting load test using wrk..."
+# Find NodePort URL (if exposed that way), or use port-forward
+SERVICE_PORT=$(kubectl get svc messaging-app -o jsonpath='{.spec.ports[0].port}')
+kubectl port-forward svc/messaging-app 8080:$SERVICE_PORT &
+PORT_FORWARD_PID=$!
+
+# wait briefly for port-forward to start
+sleep 3
+
+# Run wrk load test for 10 seconds
+wrk -t4 -c20 -d10s http://localhost:8080/
+
+# Kill the port-forward process
+kill $PORT_FORWARD_PID
+
+echo "📊 Monitoring resource usage:"
+kubectl top pods -l app=messaging-app
