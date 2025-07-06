@@ -1,4 +1,10 @@
 venv/
 requirements.txt
 .idea/
+
 minikube-linux-amd64
+*.iso
+*.tar
+*.zip
+*.exe
+*.bin
