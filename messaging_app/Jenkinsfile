@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+
+    environment {
+        PYTHON = 'python3'
+    }
+
+    tools {
+        // Requires ShiningPanda Plugin
+        // Jenkins will create a virtualenv using this
+        python 'Python 3'
+    }
+
+    stages {
+        stage('Clone repo') {
+            steps {
+                git credentialsId: 'github-creds', url: 'https://github.com/estifanosbereket1/alx-backend-python.git'
+            }
+        }
+
+        stage('Install dependencies') {
+            steps {
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install pytest
+                    pip install -r messaging_app/requirements.txt || true
+                '''
+            }
+        }
+
+        stage('Run tests') {
+            steps {
+                sh '''
+                    . venv/bin/activate
+                    pytest messaging_app/tests --junitxml=test-report.xml
+                '''
+            }
+        }
+
+        stage('Publish test report') {
+            steps {
+                junit 'test-report.xml'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline execution finished."
+        }
+    }
+}
