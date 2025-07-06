@@ -19,6 +19,6 @@ spec:
     spec:
       containers:
         - name: django
-          image: ghcr.io/estifanos/messaging:v1
+          image: ghcr.io/estifanos/messaging:v2.0 # ✅ Updated version
           ports:
             - containerPort: 8000
