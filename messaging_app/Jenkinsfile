@@ -6,9 +6,7 @@ pipeline {
     }
 
     tools {
-        // Requires ShiningPanda Plugin
-        // Jenkins will create a virtualenv using this
-        python 'Python 3'
+        python 'Python 3'  // Provided by ShiningPanda plugin
     }
 
     stages {
@@ -18,14 +16,20 @@ pipeline {
             }
         }
 
+        stage('Show branch') {
+            steps {
+                sh 'git branch'
+            }
+        }
+
         stage('Install dependencies') {
             steps {
                 sh '''
                     python3 -m venv venv
                     . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install pytest
-                    pip install -r messaging_app/requirements.txt || true
+                    pip3 install --upgrade pip
+                    pip3 install pytest
+                    pip3 install -r messaging_app/requirements.txt || true
                 '''
             }
         }
@@ -48,7 +52,7 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline execution finished."
+            echo "✅ Jenkins pipeline complete."
         }
     }
 }
